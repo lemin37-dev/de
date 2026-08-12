@@ -46,6 +46,20 @@ with DAG(
   tags              = ['bash', 'basic']   # DAG 검색(특정)을 위해 자유롭게 세팅
 ) as dag:
   # 3. Operator 정의
+  t1 = BashOperator(  # Task 정의
+    task_id = "data-print",  # 영문, 숫자, 하이픈(-), 마침표(.) 언더바(_) 사용가능
+    bash_command = ""
+  ) 
+  t2 = BashOperator(
+    task_id = "sleep",
+    bash_command = ""
+  )
+  t3 = BashOperator(
+    task_id = "echo-print",
+    bash_command = ""
+  )
 
   # 4. 의존성, 구동순서 정의
+  # t1 - t2 - t3 순으로 실행 (성공이 전제)
+  t1 >> t2 >> t3
   pass
