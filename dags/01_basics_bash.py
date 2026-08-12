@@ -15,9 +15,18 @@
 '''
 
 # 1. 필요한 모듈, 패키지 가져오기
+# DAG 클래스
+from airflow import DAG
+# 오퍼레이터 2.x (3.x 에서는 패키지 경로가 변경됨)
+from airflow.operators.bash import BashOperator
+# 스케줄 -> 시간처리
+from datetime import datetime, timedelta
 
-# 2. DAG 정의
-
+# 2. DAG 정의 -> DAG 세션이 오픈
+with DAG(
+  dag_id = "01_basics_bash"  # DAG 간 구분하는 용도
+) as dag:
   # 3. Operator 정의
 
   # 4. 의존성, 구동순서 정의
+  pass

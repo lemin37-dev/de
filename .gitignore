@@ -211,4 +211,7 @@ __marimo__/
 # git rm -r --cached logs/
 logs/
 #logs/**
-# 
+
+
+# 가상환경 제외
+airflow/
