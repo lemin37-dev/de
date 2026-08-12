@@ -37,7 +37,21 @@ def _extract_cb(**kwargs):
 
 
 def _transform_cb(**kwargs):
-  pass
+  '''
+  - kwargs을 통해 다른 Task에서 XCom으로 전달된 데이터 활용
+  - airflow context 정보 획득(ti 활용) -> 전달된 데이터 획득
+  '''
+  # 1) ti 객체 획득
+  ti = kwargs["ti"]
+
+  # 2) XCom을 통해 데이터 획득
+  data = ti.xcom_pull(task_ids="extract_task")
+
+  # 3. 데이터 확인
+  logging.info("=== Transform 작업 ===")
+  logging.info(f"data = {data}")
+  logging.info("======================")
+
 
 # 2-2. DAG metadata 작성
 with DAG(
