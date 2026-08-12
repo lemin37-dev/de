@@ -404,52 +404,50 @@
             └── *.parquet
     ```
 
+# DATA PROCESSING
+- 쌓은 데이터를 어떻게 처리할 것인가?
+- 배치/스트리밍 방식
+    ```
+                      DATA PROCESSING
 
+                          S3 BRONZE
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+                ▼                           ▼
+        Batch Processing           Stream Processing
+                │                           │
+                ▼                           ▼
+         Airflow/MWAA                Spark Streaming
+   Step Functions + lanbda                Flink -> 데이터 처리
+                │                        
+                ▼
+    Pandas / Polars / Spark -> 데이터 처리
 
+    * Aiflow 내부에서 DAG를 구성하고, DAG 내에서 Pandas/Polars/pySpark 등을 활용하여 Task 작성 -> 처리
+        - EC2 등 서버 구축 -> 평시 비용 발생 or 인프라 외부(로컬 구성) -> 보안이슈 발생가능
+        - MWAA
+    * Step Functions에서 Lambda를 구성하고 Lambda 내부에서 Pandas/Polars/pySpark 등을 활용하여 Task 작성 -> 처리
+        - 서버리스, 사용할 때만 비용발생
+    ```
+- 프로세싱 전략 : ELT, ETL
+    - 절절하게 데이터 파이프라인 내에 사용
+    - ETL : 전통적인 사용법
+    - ELT : 새롭게 등장하여 확산중
+    ```
+      Processing Strategy
+              │
+    ┌─────────┴─────────┐
+    │                   │
+    ▼                   ▼
+    ETL                 ELT
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Extract             Extract
+    ↓                   ↓
+    Transform             Load
+    ↓                   ↓
+    Load                Transform
+    ```
 - ETL 파이프라인
     - Extract-Transform-Load, 데이터 엔지니어의 전통적인 유형
     - 메달리온 아키텍쳐 구조에서 사용 -> 각 레이어에서 데이터 형태 설명
@@ -460,16 +458,14 @@
 
                 Source / S3 BRONZE
                         │
-                     Extract
+                     Extract   <- Pandas / Polars / Spark / Glue (ETL, 데이터베이스, 테이블, 크롤러 등 활용)
                         │
                         ▼
-                  Pandas / Polars
-                  Spark / Glue (ETL, 데이터베이스, 테이블, 크롤러 등 활용)
                         │
-                    Transform
+                    Transform  <- Pandas / Polars / Spark / Glue (ETL, 데이터베이스, 테이블, 크롤러 등 활용)
                         │
                         ▼
-                      Load
+                      Load     <- Pandas / Polars / Spark / Glue (ETL, 데이터베이스, 테이블, 크롤러 등 활용)
                         │
                         ▼
                     S3 SILVER
@@ -477,7 +473,6 @@
                         ▼
                      S3 GOLD
     ```
-
 - ELT 파이프라인
     - 금융/제조 프로젝트 활용, 저장 후 SQL 변환 처리
     ```
