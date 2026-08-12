@@ -8,7 +8,7 @@
    데이터 발생
         │
         ▼
-2. DATA INGESTION   : firehose > kinesis/kafka/...
+2. DATA INGESTION   : firehose > kinesis/kafka, E`L`K, E`F`K, ... 서비스
    데이터 수집 / 유입
         │
         ▼
@@ -16,7 +16,7 @@
    원본 저장
         │
         ▼
-4. DATA PROCESSING  : ETL. ELT, 메달리온 아키텍쳐, S3 | pandas/polars/spark
+4. DATA PROCESSING  : ETL. ELT, 메달리온 아키텍쳐, S3 | pandas/polars/spark (데이터 규모에 따라 결정)
    정제 / 변환 / 집계
         │
         ▼
@@ -30,15 +30,18 @@
 ────────────────────────────────────────────────────────────
 전체 과정에 걸쳐
 
-7. Orchestration    : 오케스트레이션, Airflow(배치 프로세싱)
+7. Orchestration    : 오케스트레이션, Airflow(배치 프로세싱) -> 데이터 파이프라인 구축 (도메인에 따라 구성 상이)
 8. Observability    : 그라파나/프로메테우스/ELK에서는 키바나, opensearch 대시보드 등 활용
 ```
 
 # DATA GENERATION 
 - 데이터가 어디서 발생하는가? 
+  - 목표
+    - 데이터를 더미로 발생(클라이언트가 서비스를 통해 생성한 데이터를 가정해 정상/비정상 데이터 비율 산정) -> S3 적재
+    - 더미 구현을 위해 python, aws ecs + fargate 로 구성
   - 도메인결정 -> 실제 데이터 샘플 획득, 불량율 획득 -> 구성 (프로젝트)
   - 형태
-    - [v] 최종 형태를 더미로 구성하여 적제
+    - [v] 최종 형태를 더미로 구성하여 적재
       - 파이썬 코드 작성(faker 패키지 활용)
     - 실제 요청 구성 -> 서비스 통과 -> 결과 -> 적재
       - 최종 프로젝트 형태
@@ -227,7 +230,7 @@
  Ingestion             Ingestion           Ingestion     Ingestion
         │                  │                   │            │
         ▼                  ▼                   ▼            ▼
- CloudWatch      Kafka / MSK / Kinesis    DMS / Debezium  CSV/API/DB Export
+ CloudWatch      Kafka / MSK / Kinesis    DMS / Debezium  CSV/API/DB Export (Ariflow/MWAA)
  Firehose
         │                  │                   │            │
         └──────────────────┼───────────────────┘────────────┘
@@ -259,6 +262,8 @@
 
 - Batch processing ingestion pipeline
     - 쌓여있는 데이터를 일정 주기로 처리 -> Airflow
+    - Airflow/MWAA <-> Step Functions + lambda : 서버리스(비용절감)
+    - 스케줄링 (규칙적인 시간에 작업해야 하는 경우)
     ```
     ┌─────────────────────────────────────────────────────┐
     │             02. BATCH DATA PIPELINE                 │
@@ -288,6 +293,8 @@
 - Real-time Stream ingestion pipeline
     - 데이터가 들어오는 동시에 즉시 처리
     - 공장 설비/생산 시 이상 탐지, 금융 이상거래 감지, 게임, 실시간 주문량, ...
+    - Kafka/ MSK, Kinesis, (ELK, EFK, opensearch) : 데이터 전송
+    - Flink : 실시간 데이터를 가공
     ```
     ┌─────────────────────────────────────────────────────┐
     │          03. REAL-TIME STREAMING PIPELINE           │
@@ -313,6 +320,135 @@
     [V]OpenSearch   S3 Silver   Alert/Event
       (ELK, EFK)  
     ```
+
+
+# 중간 정리 : 구조 유형
+- Application log
+    - 앱, 웹, IOT, 팩토리, 금융, 게임
+- Business Event
+    - 행위 (로그인, 검색, 스크롤, ...)
+- Database Change
+    - Update, Delete, ...
+
+
+
+# DATA STORAGE
+- 수집한 데이터를 어디에 저장하는가?
+    - 원본을 잃지 않고 저장
+    - 수집 시 장애 등의 문제로 누락 -> 백필 작업 (누락분 다시 수집)
+- 기간
+    - 일정 기간 (통상 7일, 세부 조정가능)
+        - kafka, kinesis
+    - 영구 보관
+        - 데이터 레이크 -> S3 (객체로 저장, 버킷단위로 관리, 검색지원)
+- 데이터 저장 형태 변화 예시
+    - csv -> json -> parquet(분석용, 열단위)
+- 흐름
+    ```
+        Ingestion
+            │
+            ▼
+        S3 BRONZE
+    ───────────────
+    Raw JSON  => *.json, *.json.gz
+    Raw CSV
+    Raw Event
+    Raw Log
+    CDC Data
+    ------------------- => *.parquet
+    ```
+- 파일 포맷 형태 및 사용용도
+
+    | 분류            | 대표 확장자                                    | 주요 용도                   |
+    | ------------- | ----------------------------------------- | ----------------------- |
+    | **정형 데이터**    | `.csv`, `.tsv`, `.xlsx`                   | 매출, 고객, 주문 등 테이블 데이터    |
+    | **반정형 데이터**   | `.json`, `.jsonl`, `.xml`, `.yaml`        | API 응답, 이벤트, 로그         |
+    | **분석용 컬럼 포맷** | `.parquet`, `.orc`                        | Athena, Spark, Glue 분석  |
+    | **빅데이터 포맷**   | `.avro`                                   | Kafka, Spark, 데이터 파이프라인 |
+    | **로그 파일**     | `.log`, `.txt`, `.json`, `.json.gz`       | 웹/API/애플리케이션 로그         |
+    | **압축 파일**     | `.gz`, `.zip`, `.tar.gz`, `.bz2`          | 저장 공간/전송량 절감            |
+    | **이미지**       | `.jpg`, `.png`, `.webp`, `.gif`, `.svg`   | 상품 이미지, ML 데이터          |
+    | **영상**        | `.mp4`, `.mov`, `.avi`, `.mkv`            | CCTV, 콘텐츠, ML 데이터       |
+    | **오디오**       | `.mp3`, `.wav`, `.flac`                   | 음성 데이터, AI 학습           |
+    | **문서**        | `.pdf`, `.docx`, `.pptx`, `.hwp`          | 문서 보관                   |
+    | **DB 백업**     | `.sql`, `.dump`, `.bak`                   | 데이터베이스 백업               |
+    | **ML/AI 모델**  | `.pkl`, `.joblib`, `.pt`, `.pth`, `.onnx` | 모델 아티팩트                 |
+    | **웹 파일**      | `.html`, `.css`, `.js`                    | 정적 웹사이트                 |
+    | **바이너리**      | `.bin`, `.dat` 등                          | 기타 애플리케이션 데이터           |
+
+- 저장 형태 (메달리온 아키텍처 기준) + 파티션 적용
+    ```
+    S3
+    │
+   버킷 (계정/프로젝트/팀별 기준 적용)
+    │
+    │
+    ├── bronze/      # Raw data
+    │   ├── api_logs/
+    │   │   └── *.json.gz
+    │   ├── clickstream/
+    │   │   └── *.json
+    │   └── orders/
+    │       └── *.csv
+    │
+    ├── silver/      # 클리닝, 전처리 등 1차가공된 데이터 (열기준)
+    │   ├── orders/
+    │   │   └── *.parquet
+    │   └── customers/
+    │       └── *.parquet
+    │
+    └── gold/       # 최종 데이터 형태, 데이터파이프라인의 종착점에 필요한 데이터 형태
+        ├── daily_sales/
+        │   └── *.parquet
+        └── customer_summary/
+            └── *.parquet
+    ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 - ETL 파이프라인
     - Extract-Transform-Load, 데이터 엔지니어의 전통적인 유형
