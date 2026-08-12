@@ -566,3 +566,27 @@ SQL(질의)    Data Mart(분석)     Search(검색)
         ▼                   ▼                   ▼
     S3 Bronze            Silver              Gold
     ```
+
+# Observability
+- 전체 프로세스 상 필요한 곳에 적용 -> 모니터링 수행
+```
+            OBSERVABILITY
+
+    Data Generator
+        │
+    Ingestion
+        │
+    Processing
+        │
+    Storage
+        │
+    Serving
+        │
+        └──────────────→ Monitoring
+
+    CloudWatch
+    Prometheus
+    Grafana
+    OpenSearch Dashboards
+    Airflow UI
+```
