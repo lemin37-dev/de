@@ -499,3 +499,32 @@
                         ▼
                   Analytics Mart
     ```
+
+# DATA MODELING / ARCHITECTURE
+- 데이터를 어떻게 계층화하여 관리할 것인지?
+- 메달리온 아키텍쳐가 하나의 대안으로 제시
+- 데이터 프로세싱의 결과를 관리하는 아키텍쳐
+```
+  MEDALLION ARCHITECTURE
+
+    ┌───────────────┐
+    │    BRONZE     │
+    │   Raw Data    │
+    └───────┬───────┘
+            │
+        Processing      -> 데이터 정제, 전처리, 파생변수 등
+            │
+            ▼
+    ┌───────────────┐
+    │    SILVER     │
+    │ Clean / Valid │
+    └───────┬───────┘
+            │
+      Business Logic    -> 데이터의 최종 목표에 따라 가공
+            │
+            ▼
+    ┌───────────────┐
+    │     GOLD      │
+    │   Analytics   │   -> 최종 데이터 형태
+    └───────────────┘
+```
