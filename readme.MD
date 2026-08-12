@@ -590,3 +590,70 @@ SQL(질의)    Data Mart(분석)     Search(검색)
     OpenSearch Dashboards
     Airflow UI
 ```
+
+# 최종 카테고리
+- 키워드만 정리
+    ```
+    DATA ENGINEERING
+
+    1. Data Generation
+    └─ 로그제너레이터, faker, ecr + fargate
+
+
+    2. Data Ingestion
+    ├─ Log / Event Ingestion
+    │    CloudWatch → Firehose
+    │
+    ├─ Streaming Ingestion
+    │    Kafka / Kinesis
+    │
+    ├─ Batch Ingestion
+    │    File / API / DB Export / Airflow
+    │
+    └─ CDC Ingestion
+            DMS / Debezium
+
+
+    3. Data Storage
+    ├─ S3
+    ├─ Data Lake
+    └─ Bronze
+
+
+    4. Data Processing
+    ├─ Batch Processing
+    │    Airflow + Pandas/Polars/Spark
+    │
+    ├─ Stream Processing
+    │    Flink / Spark Streaming
+    │
+    ├─ ETL
+    └─ ELT
+
+
+    5. Data Modeling
+    └─ Medallion
+            Bronze
+            ↓
+            Silver
+            ↓
+            Gold
+
+
+    6. Data Serving
+    ├─ Athena
+    ├─ Redshift
+    ├─ OpenSearch / ELK / EFK
+    └─ QuickSight
+
+
+    7. Orchestration
+    └─ Airflow / Step Functions
+
+
+    8. Observability
+    ├─ CloudWatch
+    ├─ Prometheus
+    ├─ Grafana
+    └─ OpenSearch Dashboard
+    ```
