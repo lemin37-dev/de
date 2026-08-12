@@ -528,3 +528,24 @@
     │   Analytics   │   -> 최종 데이터 형태
     └───────────────┘
 ```
+
+# DATA SERVING
+- 최종 데이터(골드 레이어)를 어떻게 제공/사용
+```
+            DATA SERVING
+
+              S3 GOLD
+                  │
+  ┌───────────────┼────────────────┐
+  ▼               ▼                ▼
+Athena        Redshift         OpenSearch(ElasticSearch의 오픈소스 버전)
+  │               │                │
+  ▼               ▼                ▼
+SQL(질의)    Data Mart(분석)     Search(검색)
+  │               │                │
+  └───────────────┼────────────────┘
+                  ▼
+              QuickSight    -> AI 연결 -> RAG -> 서비스
+              Dashboard     -> 관제, 모니터링, ...
+              Application   -> 앱, 웹, ...
+```
