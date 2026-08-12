@@ -47,16 +47,16 @@ with DAG(
 ) as dag:
   # 3. Operator 정의
   t1 = BashOperator(  # Task 정의
-    task_id = "data-print",  # 영문, 숫자, 하이픈(-), 마침표(.) 언더바(_) 사용가능
-    bash_command = ""
+    task_id = "date-print",  # 영문, 숫자, 하이픈(-), 마침표(.) 언더바(_) 사용가능
+    bash_command = "date"
   ) 
   t2 = BashOperator(
     task_id = "sleep",
-    bash_command = ""
+    bash_command = "sleep 5"
   )
   t3 = BashOperator(
     task_id = "echo-print",
-    bash_command = ""
+    bash_command = 'echo "hello airflow task"'
   )
 
   # 4. 의존성, 구동순서 정의
