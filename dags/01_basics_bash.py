@@ -13,3 +13,11 @@
 - host pc에서 작성한 해당 파일은 xxx-workcer 컨테이너에 /opt/airflow/dags 하위에 동기화됨
 - 실제는 xxx-worker 컨테이너에서 가동됨
 '''
+
+# 1. 필요한 모듈, 패키지 가져오기
+
+# 2. DAG 정의
+
+  # 3. Operator 정의
+
+  # 4. 의존성, 구동순서 정의
