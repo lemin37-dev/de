@@ -10,6 +10,10 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import logging
 
+# KST 사용을 위한 세팅
+import pendulum
+KST = pendulum.timezone("Asia/Seoul")
+
 # 2. DAG 정의
 # 2-1. 콜백함수 정의
 def _extract_cb(**kwargs):
@@ -23,12 +27,21 @@ def _extract_cb(**kwargs):
   ds_nodash = kwargs["ds_nodash"] # ds_nodash : Task 수행 시간(dash 제거)
   run_id    = kwargs["run_id"]    # run_id : Task 실행 ID
 
+  # 시간 보정
+  logical_date     = kwargs["logical_date"]
+  logical_date_kst = logical_date.in_timezone(KST)
+  # 차후 S3 등에 적재할 때 파티션 시 활용
+  ds_kst           = logical_date_kst.format("YYYY-MM-DD")
+  ds_nodash_kst    = logical_date_kst.format("YYYYMMDD")
+
   # 2) 로깅
   logging.info("=== Extract 작업 ===")
-  logging.info(f"ti        = {ti}")
-  logging.info(f"ds        = {ds}")
-  logging.info(f"ds_nodash = {ds_nodash}")
-  logging.info(f"run_id    = {run_id}")
+  logging.info(f"ti            = {ti}")
+  logging.info(f"ds            = {ds}")
+  logging.info(f"ds_kst        = {ds_kst}")
+  logging.info(f"ds_nodash     = {ds_nodash}")
+  logging.info(f"ds_nodash_kst = {ds_nodash_kst}")
+  logging.info(f"run_id        = {run_id}")
   logging.info("===================")
 
   # 3) 정보 전달
@@ -63,7 +76,11 @@ with DAG(
     "retry_delay"     : timedelta(minutes=1), 
   },
   schedule_interval = "@once",  # 수동으로 한번 수행, 주기성 X
-  start_date        = datetime(2026,6,29),
+  # 수행 시작시간 서울 시간대로 Timezone 조정
+  start_date        = pendulum.datetime(
+                        2026,6,29,
+                        tz=KST
+                      ),
   catchup           = False,
   tags              = ['python', 'xcom']
 ) as dag:
