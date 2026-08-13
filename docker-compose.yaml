@@ -293,10 +293,10 @@ services:
     image: mysql:8.0
     container_name: airflow-mysql
     environment:
-      - MYSQL_ROOT_PASSWORD: root
-      - MYSQL_DATABASE: my_datawarehouse
-      - MYSQL_USER: guest
-      - MYSQL_PASSWORD: guest
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: my_datawarehouse
+      MYSQL_USER: guest
+      MYSQL_PASSWORD: guest
     ports:
       - "3306:3306"
     volumes:
