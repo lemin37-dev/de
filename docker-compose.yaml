@@ -307,6 +307,15 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    
+  # 신용평가 서버 구성
+  ai-api-server:
+    build: ./api_server # Dcokerfile 경로
+    container_name: airflow-ai-api-server
+    ports:
+      - "8000:8000"
+    networks:
+      - default
 
 volumes:
   postgres-db-volume:
