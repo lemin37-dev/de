@@ -28,5 +28,5 @@ variable "silver_bucket_name" {
   description = "기존 silver parquet 데이터가 실제 저장하고 있는 S3 버킷 이름"
   type        = string
   # default를 생략했을 때 plan or apply시 질의(user interaction) 진행
-  default     = "de-ai-19-loggen-s3-bk-827913617635"
+  default = "de-ai-19-loggen-s3-bk-827913617635"
 }

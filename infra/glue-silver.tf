@@ -3,7 +3,7 @@
 # AWS Glue Data Catalog > database > 
 # 1. 데이터베이스 구성
 resource "aws_glue_catalog_database" "silver" {
-  name = "${lower(replace(var.project_name, "-", "_"))}_silver_glue_db"
+  name        = "${lower(replace(var.project_name, "-", "_"))}_silver_glue_db"
   description = "Silver parquet 데이터를 athena/airflow에서 조회하기 위한 Glue DB"
 
   # 실습을 위해 삭제 방지
