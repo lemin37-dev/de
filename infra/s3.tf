@@ -11,7 +11,7 @@ locals {
 ###############################################
 # 버킷 생성
 ###############################################
-resource "aws_s3_bucket" "airflow_data" {
+resource "aws_s3_bucket" "data" {
   # 버킷명
   bucket = local.airflow_bucket_name
   # 버킷을 삭제할 때
@@ -19,19 +19,18 @@ resource "aws_s3_bucket" "airflow_data" {
   # true  : 버킷 내부의 object가 남아있어도, terraform destroy 수행 시 버킷삭제
   force_destroy = var.s3_force_destroy
 
-  tags = merge(
-    local.common_tags,
-    {
-      Name = local.airflow_bucket_name
-    }
-  )
+  tags = {
+    ManageBy = "Terraform"
+    Project  = "de-ai-19-loggen"
+    Purpose  = "로그 제너레이터"
+  }
 }
 
 ###############################################
 # S3 Object Ownership
 ###############################################
-resource "aws_s3_bucket_ownership_controls" "airflow_data" {
-  bucket = aws_s3_bucket.airflow_data.id
+resource "aws_s3_bucket_ownership_controls" "data" {
+  bucket = aws_s3_bucket.data.id
 
   rule {
     # BucketOwnerEnforced 
@@ -47,9 +46,9 @@ resource "aws_s3_bucket_ownership_controls" "airflow_data" {
 # airflow(External) -> IAM access key(IAM 인증) -> AWS S3 bucket 접근
 # S3는 private으로 관리
 ###############################################
-resource "aws_s3_bucket_public_access_block" "airflow_data" {
+resource "aws_s3_bucket_public_access_block" "data" {
   # 대상 버킷
-  bucket = aws_s3_bucket.airflow_data.id
+  bucket = aws_s3_bucket.data.id
 
   # 설정
   ## 새로운 public acl 설정 차단
@@ -67,8 +66,8 @@ resource "aws_s3_bucket_public_access_block" "airflow_data" {
 # 두 개의 개별 암호화 계층으로 객체를 보호
 # S3에 저장되는 object를 자동 암호화
 ###############################################
-resource "aws_s3_bucket_server_side_encryption_configuration" "airflow_data" {
-  bucket = aws_s3_bucket.airflow_data.id
+resource "aws_s3_bucket_server_side_encryption_configuration" "data" {
+  bucket = aws_s3_bucket.data.id
 
   rule {
     apply_server_side_encryption_by_default {
