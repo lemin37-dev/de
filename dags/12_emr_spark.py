@@ -95,7 +95,7 @@ with DAG(
   # Task 정의
   create_cluster_task = EmrCreateJobFlowOperator( # EMR 클러스터 생성 (인프라 구성) -> 구성 후 클러스터를 참조할 수 있는 리소스 ID 자동반환
     task_id            = "create_cluster",
-    job_flow_overrides = JOB_FLOW_OVVERRIDES,
+    job_flow_overrides = JOB_FLOW_OVERRIDES,
     aws_conn_id        = "aws_default",
   )
   dummy_task = PythonOperator(  # 인프라 구성완료 확인 (생략가능)
